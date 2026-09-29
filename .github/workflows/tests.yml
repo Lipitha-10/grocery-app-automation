@@ -1,0 +1,38 @@
+name: Run FreshCart Automation Suite
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      viewport:
+        description: 'desktop or mobile'
+        required: false
+        default: 'desktop'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Run tests
+        run: mvn test -Dheadless=true -Dviewport=${{ github.event.inputs.viewport || 'desktop' }}
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testng-report
+          path: target/surefire-reports/
